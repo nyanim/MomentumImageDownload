@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import time
+import datetime
 
 try:
     # For Python 3.0 and later
@@ -16,26 +17,31 @@ except ImportError:
 from config import *
 
 directory=os.path.dirname(os.path.realpath(__file__)) + '/pictures/'
-today = time.strftime("%Y-%m-%d")
+current_day = datetime.datetime.today()
 
-req = Request('https://api.momentumdash.com/feed/bulk?syncTypes=backgrounds&localDate=' + today)
-req.add_header('Host', 'api.momentumdash.com')
-req.add_header('Accept', '*/*')
-req.add_header('X-Momentum-ClientId', client_id)
-req.add_header('X-Momentum-Version', '0.91.1')
-req.add_header('Content-Type', 'application/json')
+for i in range(0,30):
+    current_day = current_day - datetime.timedelta(days=1)
+    print current_day.strftime('%Y-%m-%d')
 
-response = urlopen(req)
+    req = Request('https://api.momentumdash.com/feed/bulk?syncTypes=backgrounds&localDate=' + current_day.strftime('%Y-%m-%d'))
+    req.add_header('Host', 'api.momentumdash.com')
+    req.add_header('Accept', '*/*')
+    req.add_header('X-Momentum-ClientId', client_id)
+    req.add_header('X-Momentum-Version', '0.91.1')
+    req.add_header('Content-Type', 'application/json')
 
-data = json.loads(response.read())
+    response = urlopen(req)
 
-if not os.path.exists(directory):
-    os.makedirs(directory)
+    data = json.loads(response.read())
 
-for bg in data['backgrounds']:
-	name = bg['filename'].rsplit('/', 1)[-1]
-	path = directory + name+".png"
-	print (name)
-	#no file type data, so assume .png
-	if not os.path.exists(path):
-		urlretrieve(bg['filename'], path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    for bg in data['backgrounds']:
+        print bg['filename']
+        name = bg['filename'].rsplit('/', 1)[-1]
+        path = directory + name+".png"
+        print (name)
+        #no file type data, so assume .png
+        if not os.path.exists(path):
+            urlretrieve(bg['filename'], path)
